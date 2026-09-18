@@ -1,12 +1,13 @@
 """
-Loads the trained model (saved by Notebook 6) and produces predictions.
-The model is only loaded here, never re-trained.
-Handles bad input and missing values without crashing the service.
+Loads the trained model from the MLflow Model Registry (registered by
+register_model.py) and produces predictions. The model is only loaded
+here, never re-trained. Handles bad input and missing values without
+crashing the service.
 """
 
 import logging
 import time
-import joblib
+import mlflow.sklearn
 
 from src.config_loader import load_config, resolve_path
 from src.data_validation import validate_order, ValidationError
@@ -15,6 +16,9 @@ from src.preprocessing import order_to_dataframe, add_time_features
 from src.feature_engineering import FeatureBuilder
 
 logger = logging.getLogger(__name__)
+
+MODEL_NAME = "late_delivery_model"
+MODEL_ALIAS = "staging"
 
 
 class PredictionError(Exception):
@@ -27,11 +31,16 @@ class LateDeliveryPredictor:
 
     def __init__(self, config: dict = None):
         self.config = config or load_config()
-        model_path = resolve_path(self.config["paths"]["model"])
-        self.model = joblib.load(model_path)
+
+        # The service loads the model from the MLflow registry, not from a
+        # local notebook folder, as required by the task.
+        mlflow.set_tracking_uri(f"sqlite:///{resolve_path('mlflow.db')}")
+        model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
+        self.model = mlflow.sklearn.load_model(model_uri)
+
         self.feature_builder = FeatureBuilder(self.config)
         self.model_version = self.config["api"]["version"]
-        logger.info(f"Loaded model from {model_path} (version {self.model_version}).")
+        logger.info(f"Loaded model '{MODEL_NAME}' (alias={MODEL_ALIAS}) from MLflow registry.")
 
     def predict(self, order: dict) -> dict:
         """
@@ -48,12 +57,8 @@ class LateDeliveryPredictor:
         """
         start_time = time.time()
 
-        # Layer 1: lightweight, code-based checks (missing fields, types, negatives).
         validate_order(order)
 
-        # Layer 2: statistical / business rules via Great Expectations
-        # (ranges, allowed categories). Both layers raise a clear, specific
-        # error instead of letting bad data reach the model silently.
         df = order_to_dataframe(order)
         validate_with_great_expectations(df)
 
