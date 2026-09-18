@@ -1,0 +1,41 @@
+# Project configuration
+# Every path and parameter used by the pipeline comes from this file.
+# Nothing should be hardcoded inside the Python modules.
+
+paths:
+  models_dir: "models"
+  data_dir: "data"
+  logs_dir: "logs"
+
+  num_imputer: "models/num_imputer.joblib"
+  scaler: "models/scaler.joblib"
+  cat_imputer: "models/cat_imputer.joblib"
+  encoder: "models/encoder.joblib"
+  model: "models/final_model.joblib"
+  feature_list: "models/feature_list.txt"
+
+features:
+  numeric_features:
+    - total_price
+    - total_freight
+    - n_items
+    - total_payment_value
+    - n_payment_installments
+    - purchase_weekday
+    - purchase_month
+    - purchase_hour
+
+  categorical_features:
+    - customer_state
+    - payment_type
+    - product_category_name_english
+
+logging:
+  level: "INFO"
+  log_file: "logs/service.log"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  title: "Late Delivery Prediction API"
+  version: "1.0.0"
