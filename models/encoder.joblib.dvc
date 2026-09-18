@@ -1,0 +1,5 @@
+outs:
+- md5: cbcf6b2089bab4aef41af197f7eb748b
+  size: 2682
+  hash: md5
+  path: encoder.joblib

@@ -1,0 +1,5 @@
+outs:
+- md5: ab1da347a4be7f792bab26e20993702f
+  size: 943
+  hash: md5
+  path: cat_imputer.joblib
