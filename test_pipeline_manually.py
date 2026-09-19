@@ -4,10 +4,12 @@ to confirm the pipeline loads everything and produces a prediction
 that matches what the notebooks would produce for a similar order.
 """
 
-import logging
-logging.basicConfig(level=logging.INFO)
-
+from src.logger_setup import setup_logging
+from src.config_loader import load_config
 from src.predict import LateDeliveryPredictor
+
+config = load_config()
+setup_logging(config)
 
 sample_order = {
     "total_price": 120.50,
@@ -21,7 +23,7 @@ sample_order = {
     "product_category_name_english": "housewares",
 }
 
-predictor = LateDeliveryPredictor()
+predictor = LateDeliveryPredictor(config)
 result = predictor.predict(sample_order)
 print("\nPrediction result:")
 print(result)

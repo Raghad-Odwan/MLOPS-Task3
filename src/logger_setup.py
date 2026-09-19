@@ -39,6 +39,12 @@ def setup_logging(config: dict = None) -> None:
     file_handler.setFormatter(formatter)
     root_logger.addHandler(file_handler)
 
+    # Great Expectations and MLflow log a lot of internal setup noise at INFO
+    # level. Keep our own modules at the configured level, but quiet down
+    # these third-party libraries unless something actually goes wrong.
+    logging.getLogger("great_expectations").setLevel(logging.WARNING)
+    logging.getLogger("mlflow").setLevel(logging.WARNING)
+
     logging.getLogger(__name__).info(
         f"Logging configured. level={level_name}, log_file={log_file_path}"
     )
