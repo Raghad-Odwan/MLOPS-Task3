@@ -1,0 +1,46 @@
+# Brings up the whole system with one command: the database, the API,
+# and a shared volume for the model/MLflow artifacts.
+#
+# Run with:
+#   docker compose up --build
+
+services:
+  db:
+    image: postgres:16
+    container_name: olist-db-compose
+    environment:
+      POSTGRES_USER: ${DB_USER:-olist}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-olist123}
+      POSTGRES_DB: ${DB_NAME:-olist_db}
+    ports:
+      - "5433:5432"  # different host port to avoid clashing with the existing olist-db container
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-olist}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: late-delivery-api
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-olist}
+      DB_PASSWORD: ${DB_PASSWORD:-olist123}
+      DB_NAME: ${DB_NAME:-olist_db}
+    volumes:
+      - artifacts:/app/models
+      - mlflow_data:/app/mlruns
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
+  artifacts:
+  mlflow_data:
