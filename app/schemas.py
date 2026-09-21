@@ -9,6 +9,7 @@ from typing import List
 
 class OrderRequest(BaseModel):
     """A single incoming order to predict on."""
+
     total_price: float = Field(..., ge=0, description="Total price of items in the order")
     total_freight: float = Field(..., ge=0, description="Total freight/shipping value")
     n_items: int = Field(..., ge=1, description="Number of items in the order")
@@ -37,6 +38,7 @@ class OrderRequest(BaseModel):
 
 class PredictionResponse(BaseModel):
     """The result of a prediction for a single order."""
+
     is_late: int = Field(..., description="1 if predicted late, 0 if predicted on time")
     late_probability: float = Field(..., description="Predicted probability of being late")
     model_version: str = Field(..., description="Version of the API/model that produced this")
@@ -45,11 +47,13 @@ class PredictionResponse(BaseModel):
 
 class BatchOrderRequest(BaseModel):
     """A batch of orders to predict on in one request."""
+
     orders: List[OrderRequest]
 
 
 class BatchPredictionResponse(BaseModel):
     """Results for a batch prediction request."""
+
     predictions: List[PredictionResponse]
 
 

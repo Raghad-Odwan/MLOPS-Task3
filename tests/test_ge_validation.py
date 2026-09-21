@@ -7,15 +7,18 @@ import pytest
 import pandas as pd
 from src.ge_validation import validate_with_great_expectations, DataExpectationError
 
-
-GOOD_ORDER_DF = pd.DataFrame([{
-    "total_price": 120.50,
-    "total_freight": 18.90,
-    "n_items": 1,
-    "n_payment_installments": 2,
-    "customer_state": "SP",
-    "payment_type": "credit_card",
-}])
+GOOD_ORDER_DF = pd.DataFrame(
+    [
+        {
+            "total_price": 120.50,
+            "total_freight": 18.90,
+            "n_items": 1,
+            "n_payment_installments": 2,
+            "customer_state": "SP",
+            "payment_type": "credit_card",
+        }
+    ]
+)
 
 
 def test_valid_order_passes_great_expectations():

@@ -6,7 +6,6 @@ Call setup_logging() once, early, before anything else runs.
 
 import logging
 import sys
-from pathlib import Path
 
 from src.config_loader import load_config, resolve_path
 
@@ -45,6 +44,4 @@ def setup_logging(config: dict = None) -> None:
     logging.getLogger("great_expectations").setLevel(logging.WARNING)
     logging.getLogger("mlflow").setLevel(logging.WARNING)
 
-    logging.getLogger(__name__).info(
-        f"Logging configured. level={level_name}, log_file={log_file_path}"
-    )
+    logging.getLogger(__name__).info(f"Logging configured. level={level_name}, log_file={log_file_path}")

@@ -13,39 +13,52 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 ALLOWED_STATES = [
-    "SP", "RJ", "MG", "RS", "PR", "SC", "BA", "DF", "ES", "GO",
-    "PE", "CE", "PA", "MT", "MA", "MS", "PB", "PI", "RN", "AL",
-    "SE", "TO", "RO", "AM", "AC", "AP", "RR",
+    "SP",
+    "RJ",
+    "MG",
+    "RS",
+    "PR",
+    "SC",
+    "BA",
+    "DF",
+    "ES",
+    "GO",
+    "PE",
+    "CE",
+    "PA",
+    "MT",
+    "MA",
+    "MS",
+    "PB",
+    "PI",
+    "RN",
+    "AL",
+    "SE",
+    "TO",
+    "RO",
+    "AM",
+    "AC",
+    "AP",
+    "RR",
 ]
 ALLOWED_PAYMENT_TYPES = ["credit_card", "boleto", "voucher", "debit_card"]
 
 
 class DataExpectationError(Exception):
     """Raised when incoming data fails one or more Great Expectations checks."""
+
     pass
 
 
 def _build_expectations():
     """The set of expectations applied to every incoming order."""
     return [
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="total_price", min_value=0, max_value=100000
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="total_freight", min_value=0, max_value=10000
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="n_items", min_value=1, max_value=100
-        ),
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="n_payment_installments", min_value=0, max_value=36
-        ),
-        gx.expectations.ExpectColumnValuesToBeInSet(
-            column="customer_state", value_set=ALLOWED_STATES
-        ),
-        gx.expectations.ExpectColumnValuesToBeInSet(
-            column="payment_type", value_set=ALLOWED_PAYMENT_TYPES
-        ),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="total_price", min_value=0, max_value=100000),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="total_freight", min_value=0, max_value=10000),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="n_items", min_value=1, max_value=100),
+        gx.expectations.ExpectColumnValuesToBeBetween(column="n_payment_installments", min_value=0, max_value=36),
+        gx.expectations.ExpectColumnValuesToBeInSet(column="customer_state", value_set=ALLOWED_STATES),
+        gx.expectations.ExpectColumnValuesToBeInSet(column="payment_type", value_set=ALLOWED_PAYMENT_TYPES),
         gx.expectations.ExpectColumnValuesToNotBeNull(column="total_price"),
         gx.expectations.ExpectColumnValuesToNotBeNull(column="customer_state"),
     ]
@@ -67,11 +80,13 @@ def validate_with_great_expectations(df: pd.DataFrame) -> None:
     for expectation in _build_expectations():
         result = batch.validate(expectation)
         if not result.success:
-            failures.append({
-                "expectation": expectation.__class__.__name__,
-                "column": getattr(expectation, "column", None),
-                "result": result.result,
-            })
+            failures.append(
+                {
+                    "expectation": expectation.__class__.__name__,
+                    "column": getattr(expectation, "column", None),
+                    "result": result.result,
+                }
+            )
 
     if failures:
         logger.warning(f"Great Expectations validation failed: {failures}")

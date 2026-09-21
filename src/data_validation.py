@@ -23,6 +23,7 @@ REQUIRED_FIELDS = [
 
 class ValidationError(Exception):
     """Raised when an incoming order fails basic validation."""
+
     pass
 
 
@@ -37,8 +38,7 @@ def validate_order(order: dict) -> None:
         logger.warning(f"Missing fields in incoming order: {missing}")
         raise ValidationError(f"Missing required fields: {missing}")
 
-    numeric_fields = ["total_price", "total_freight", "n_items",
-                       "total_payment_value", "n_payment_installments"]
+    numeric_fields = ["total_price", "total_freight", "n_items", "total_payment_value", "n_payment_installments"]
     for field in numeric_fields:
         value = order[field]
         if not isinstance(value, (int, float)):

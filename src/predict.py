@@ -23,6 +23,7 @@ MODEL_ALIAS = "staging"
 
 class PredictionError(Exception):
     """Raised when a prediction cannot be produced, for any reason other than bad input."""
+
     pass
 
 
@@ -83,9 +84,6 @@ class LateDeliveryPredictor:
             "latency_ms": round(latency_ms, 2),
         }
 
-        logger.info(
-            f"Prediction made | input={order} | output={result} | "
-            f"latency_ms={result['latency_ms']}"
-        )
+        logger.info(f"Prediction made | input={order} | output={result} | " f"latency_ms={result['latency_ms']}")
 
         return result

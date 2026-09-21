@@ -8,7 +8,6 @@ from src.predict import LateDeliveryPredictor
 from src.data_validation import ValidationError
 from src.ge_validation import DataExpectationError
 
-
 GOOD_ORDER = {
     "total_price": 120.50,
     "total_freight": 18.90,

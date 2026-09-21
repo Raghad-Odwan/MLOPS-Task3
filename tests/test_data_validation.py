@@ -7,7 +7,6 @@ as model input).
 import pytest
 from src.data_validation import validate_order, ValidationError, REQUIRED_FIELDS
 
-
 GOOD_ORDER = {
     "total_price": 120.50,
     "total_freight": 18.90,
