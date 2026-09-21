@@ -30,6 +30,9 @@ jobs:
       - name: Lint with flake8
         run: flake8 src/ app/ tests/ --max-line-length=120 --extend-ignore=E203
 
+      - name: Register the model with MLflow (fresh, for this CI run)
+        run: python register_model.py
+
       - name: Run tests with pytest
         run: pytest tests/ -v
 
