@@ -9,14 +9,19 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy only what the service needs at runtime
+# Copy only what the service needs at runtime.
+# Note: mlflow.db and mlruns/ are NOT copied from the host. They are
+# created fresh inside the container on first startup (see entrypoint.sh),
+# using the exact MLflow version installed in this image. This avoids any
+# version mismatch between a locally-created mlflow.db and the container.
 COPY app/ ./app/
 COPY src/ ./src/
 COPY config/ ./config/
 COPY models/ ./models/
-COPY mlflow.db ./mlflow.db
-COPY mlruns/ ./mlruns/
+COPY register_model.py .
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["./entrypoint.sh"]
