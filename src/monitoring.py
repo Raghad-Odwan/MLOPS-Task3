@@ -59,9 +59,7 @@ class ServiceMetrics:
 
     def snapshot(self) -> dict:
         with self._lock:
-            avg_latency = (
-                self.total_latency_ms / self.request_count if self.request_count else 0.0
-            )
+            avg_latency = self.total_latency_ms / self.request_count if self.request_count else 0.0
             error_rate = self.error_count / self.request_count if self.request_count else 0.0
             late_ratio = (
                 self.late_predictions / (self.late_predictions + self.on_time_predictions)
