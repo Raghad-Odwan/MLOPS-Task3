@@ -1,6 +1,6 @@
 """
 FastAPI service for late-delivery prediction.
-Routes: health check, model info, single predict, batch predict.
+Routes: health check, model info, single predict, batch predict, metrics.
 
 Run locally with:
     uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -14,6 +14,7 @@ from src.config_loader import load_config
 from src.predict import LateDeliveryPredictor, PredictionError
 from src.data_validation import ValidationError
 from src.ge_validation import DataExpectationError
+from src.monitoring import metrics, log_prediction
 
 from app.schemas import (
     OrderRequest,
@@ -22,6 +23,7 @@ from app.schemas import (
     BatchPredictionResponse,
     HealthResponse,
     ModelInfoResponse,
+    MetricsResponse,
 )
 
 config = load_config()
@@ -57,17 +59,33 @@ def model_info():
     )
 
 
+@app.get("/metrics", response_model=MetricsResponse, tags=["Monitoring"])
+def get_metrics():
+    """
+    Basic service metrics: request count, error rate, average latency,
+    and the distribution of predictions (late vs on-time), so drift in
+    predicted outcomes can be noticed over time.
+    """
+    return MetricsResponse(**metrics.snapshot())
+
+
 @app.post("/predict", response_model=PredictionResponse, tags=["Prediction"])
 def predict_single(order: OrderRequest):
     """Predict late/on-time for a single order."""
     try:
-        result = predictor.predict(order.model_dump())
+        order_dict = order.model_dump()
+        result = predictor.predict(order_dict)
+        metrics.record_success(result)
+        log_prediction(order_dict, result)
         return PredictionResponse(**result)
     except ValidationError as e:
+        metrics.record_error()
         raise HTTPException(status_code=422, detail=f"Invalid order: {e}")
     except DataExpectationError as e:
+        metrics.record_error()
         raise HTTPException(status_code=422, detail=f"Order failed data validation: {e}")
     except PredictionError as e:
+        metrics.record_error()
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 
 
@@ -77,10 +95,15 @@ def predict_batch(batch: BatchOrderRequest):
     results = []
     for order in batch.orders:
         try:
-            result = predictor.predict(order.model_dump())
+            order_dict = order.model_dump()
+            result = predictor.predict(order_dict)
+            metrics.record_success(result)
+            log_prediction(order_dict, result)
             results.append(PredictionResponse(**result))
         except (ValidationError, DataExpectationError) as e:
+            metrics.record_error()
             raise HTTPException(status_code=422, detail=f"Invalid order in batch: {e}")
         except PredictionError as e:
+            metrics.record_error()
             raise HTTPException(status_code=500, detail=f"Prediction failed for an order in batch: {e}")
     return BatchPredictionResponse(predictions=results)

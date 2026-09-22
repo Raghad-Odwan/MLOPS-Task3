@@ -68,6 +68,19 @@ class ModelInfoResponse(BaseModel):
     api_version: str
 
 
+class MetricsResponse(BaseModel):
+    uptime_seconds: float = Field(..., description="How long the service has been running")
+    request_count: int = Field(..., description="Total number of prediction requests received")
+    error_count: int = Field(..., description="Total number of requests that resulted in an error")
+    error_rate: float = Field(..., description="Fraction of requests that resulted in an error")
+    avg_latency_ms: float = Field(..., description="Average prediction latency in milliseconds")
+    late_predictions: int = Field(..., description="Number of predictions where is_late=1")
+    on_time_predictions: int = Field(..., description="Number of predictions where is_late=0")
+    predicted_late_ratio: float = Field(
+        ..., description="Fraction of predictions that were late, useful for spotting drift"
+    )
+
+
 class ErrorResponse(BaseModel):
     error: str
     detail: str
